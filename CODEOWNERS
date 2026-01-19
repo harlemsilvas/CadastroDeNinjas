@@ -1,0 +1,6 @@
+# CODEOWNERS
+# Define os donos do projeto (padrão GitHub)
+# Sintaxe: <pattern> <owner>
+
+# Responsáveis gerais
+* @harlemsilvas
