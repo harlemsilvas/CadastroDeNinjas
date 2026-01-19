@@ -5,6 +5,10 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table (name = "tb_missoes")
@@ -19,9 +23,9 @@ public class MissoesModel {
     private String nome;
     private String dificuldade;
 
-    // @OneToManyUma missao pode ter varios ninjas
-    @OneToOne(mappedBy = "missoes")
-
-    private NinjaModel ninja;
+    // Uma missão pode ter vários ninjas
+    @OneToMany(mappedBy = "missoes", cascade = CascadeType.ALL, orphanRemoval = false)
+    @JsonIgnore
+    private List<NinjaModel> ninjas = new ArrayList<>();
 
 }

@@ -55,4 +55,4 @@ Obrigado por contribuir com o CadastroDeNinjas! Abaixo estão as orientações r
 
 ---
 
-Agradecemos sua contribuição! Se quiser, posso criar templates de ISSUE/PR e um CODE_OF_CONDUCT básico — diga se deseja isso.
+Agradecemos sua contribuição! Sua ajuda é fundamental para o sucesso do CadastroDeNinjas. Se tiver dúvidas, sinta-se à vontade para abrir uma issue ou entrar em contato com os mantenedores.

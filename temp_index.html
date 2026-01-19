@@ -1,0 +1,211 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CadastroDeNinjas - UI de Teste</title>
+  <style>
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;margin:0;background:#f6f8fa;color:#111}
+    header{background:#0b5fff;color:#fff;padding:16px 24px}
+    .container{max-width:980px;margin:20px auto;padding:16px;background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(12,15,20,0.06)}
+    h1{margin:0;font-size:20px}
+    form{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+    label{display:block;font-size:13px;color:#333}
+    input,select{width:100%;padding:8px;border:1px solid #dfe3e8;border-radius:6px}
+    button{padding:10px 14px;border-radius:6px;border:0;background:#0b5fff;color:#fff;cursor:pointer}
+    .actions{display:flex;gap:8px;align-items:center}
+    .table{margin-top:16px;width:100%;border-collapse:collapse}
+    .table th,.table td{padding:8px;border:1px solid #e6e9ee;text-align:left}
+    pre{background:#f3f4f6;padding:12px;border-radius:6px;overflow:auto}
+    .muted{color:#666;font-size:13px}
+    .full-width{grid-column:1/3}
+    .flex{display:flex;gap:8px}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>CadastroDeNinjas - UI de Teste</h1>
+  </header>
+
+  <div class="container">
+    <section>
+      <h2>Teste rÃ¡pido de CRUD - Ninjas</h2>
+      <p class="muted">Preencha os campos e use os botÃµes para interagir com a API.</p>
+
+      <form id="ninjaForm">
+        <div>
+          <label for="id">ID (para atualizar / deletar)</label>
+          <input id="id" name="id" type="number" placeholder="Deixe vazio para criar" />
+        </div>
+        <div>
+          <label for="nome">Nome</label>
+          <input id="nome" name="nome" type="text" required />
+        </div>
+        <div>
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" />
+        </div>
+        <div>
+          <label for="idade">Idade</label>
+          <input id="idade" name="idade" type="number" />
+        </div>
+
+        <div>
+          <label for="missao">MissÃ£o (opcional)</label>
+          <select id="missao" name="missao">
+            <option value="">-- nenhuma --</option>
+          </select>
+        </div>
+
+        <div class="actions full-width">
+          <div class="flex">
+            <button type="button" id="btnCreate">Criar</button>
+            <button type="button" id="btnUpdate">Atualizar (PUT)</button>
+            <button type="button" id="btnDelete">Remover</button>
+            <button type="button" id="btnGet">Buscar por ID</button>
+            <button type="button" id="btnList">Listar todos</button>
+          </div>
+        </div>
+
+        <div class="full-width">
+          <label for="response">Resposta (JSON)</label>
+          <pre id="response">-</pre>
+        </div>
+      </form>
+
+    </section>
+
+    <section style="margin-top:18px">
+      <h3>Lista de Ninjas no banco</h3>
+      <p class="muted">Use <strong>Listar todos</strong> para verificar se o banco jÃ¡ possui registros.</p>
+      <table class="table" id="ninjasTable">
+        <thead>
+          <tr><th>ID</th><th>Nome</th><th>Email</th><th>Idade</th><th>MissÃ£o</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </div>
+
+  <script>
+    const apiBase = '';
+
+    const $ = id => document.getElementById(id);
+    const resp = $('response');
+    const tableBody = document.querySelector('#ninjasTable tbody');
+    const missaoSelect = $('missao');
+
+    function show(obj){
+      resp.textContent = JSON.stringify(obj, null, 2);
+    }
+
+    async function listMissoes(){
+      try{
+        const res = await fetch(apiBase + '/missoes');
+        if(!res.ok) throw new Error('Falha ao listar missÃµes: '+res.status);
+        const data = await res.json();
+        // popular select
+        missaoSelect.innerHTML = '<option value="">-- nenhuma --</option>';
+        data.forEach(m => {
+          const opt = document.createElement('option');
+          opt.value = m.id;
+          opt.textContent = m.nome + (m.dificuldade ? (' ('+m.dificuldade+')') : '');
+          missaoSelect.appendChild(opt);
+        });
+      }catch(e){
+        console.error(e); show({error: e.message});
+      }
+    }
+
+    async function listNinjas(){
+      try{
+        const res = await fetch(apiBase + '/ninjas');
+        if(!res.ok) throw new Error('Falha ao listar ninjas: '+res.status);
+        const data = await res.json();
+        show(data);
+        renderTable(data);
+      }catch(e){ console.error(e); show({error: e.message}); }
+    }
+
+    function renderTable(items){
+      tableBody.innerHTML = '';
+      if(!Array.isArray(items)) return;
+      items.forEach(n => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${n.id ?? ''}</td><td>${escapeHtml(n.nome)}</td><td>${escapeHtml(n.email)}</td><td>${n.idade ?? ''}</td><td>${n.missoes ? escapeHtml(n.missoes.nome) : ''}</td>`;
+        tableBody.appendChild(tr);
+      });
+    }
+
+    function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    function buildPayload(){
+      const id = parseInt($('id').value) || null;
+      const nome = $('nome').value;
+      const email = $('email').value;
+      const idade = $('idade').value ? parseInt($('idade').value) : null;
+      const missaoId = $('missao').value || null;
+      const payload = { nome, email, idade };
+      if(missaoId) payload.missoes = { id: parseInt(missaoId) };
+      return { id, payload };
+    }
+
+    async function createNinja(){
+      const { payload } = buildPayload();
+      try{
+        const res = await fetch(apiBase + '/ninjas', {
+          method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        show({status: res.status, body: data});
+        listNinjas();
+      }catch(e){ console.error(e); show({error: e.message}); }
+    }
+
+    async function updateNinja(){
+      const { id, payload } = buildPayload();
+      if(!id){ show({error:'Informe o ID para atualizar'}); return; }
+      try{
+        const res = await fetch(apiBase + `/ninjas/${id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+        if(res.status===404){ show({status:404, message:'NÃ£o encontrado'}); return; }
+        const data = await res.json();
+        show({status: res.status, body: data});
+        listNinjas();
+      }catch(e){ console.error(e); show({error: e.message}); }
+    }
+
+    async function deleteNinja(){
+      const id = parseInt($('id').value);
+      if(!id){ show({error:'Informe o ID para deletar'}); return; }
+      try{
+        const res = await fetch(apiBase + `/ninjas/${id}`, {method:'DELETE'});
+        show({status: res.status});
+        listNinjas();
+      }catch(e){ console.error(e); show({error: e.message}); }
+    }
+
+    async function getById(){
+      const id = parseInt($('id').value);
+      if(!id){ show({error:'Informe o ID para buscar'}); return; }
+      try{
+        const res = await fetch(apiBase + `/ninjas/${id}`);
+        if(res.status===404){ show({status:404, message:'NÃ£o encontrado'}); return; }
+        const data = await res.json();
+        show({status: res.status, body: data});
+      }catch(e){ console.error(e); show({error: e.message}); }
+    }
+
+    // bind buttons
+    document.addEventListener('DOMContentLoaded', ()=>{
+      $('btnCreate').addEventListener('click', createNinja);
+      $('btnUpdate').addEventListener('click', updateNinja);
+      $('btnDelete').addEventListener('click', deleteNinja);
+      $('btnGet').addEventListener('click', getById);
+      $('btnList').addEventListener('click', listNinjas);
+      listMissoes();
+      listNinjas();
+    });
+  </script>
+</body>
+</html>
+
