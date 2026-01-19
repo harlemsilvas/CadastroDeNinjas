@@ -4,6 +4,9 @@ INSERT INTO tb_missoes (id, nome, dificuldade) VALUES (1, 'Praticar Taijutsu', '
 INSERT INTO tb_missoes (id, nome, dificuldade) VALUES (2, 'Recuperar Pergaminho', 'Media');
 INSERT INTO tb_missoes (id, nome, dificuldade) VALUES (3, 'Proteger a Vila', 'Dificil');
 
+-- Ajustar sequence/identity para evitar colisões (próximo id = max(id)+1)
+ALTER TABLE tb_missoes ALTER COLUMN id RESTART WITH 4;
+
 -- Insere 10 ninjas (ids fixos para reprodução); distribui missoes_id ciclicamente
 INSERT INTO tb_cadastro (id, nome, email, idade, missoes_id) VALUES (1, 'Naruto Uzumaki', 'narutouzumaki@naruto.test', 16, 1);
 INSERT INTO tb_cadastro (id, nome, email, idade, missoes_id) VALUES (2, 'Sasuke Uchiha', 'sasukeuchiha@naruto.test', 17, 2);
@@ -15,3 +18,6 @@ INSERT INTO tb_cadastro (id, nome, email, idade, missoes_id) VALUES (7, 'Rock Le
 INSERT INTO tb_cadastro (id, nome, email, idade, missoes_id) VALUES (8, 'Neji Hyuga', 'nejihyuga@naruto.test', 18, 2);
 INSERT INTO tb_cadastro (id, nome, email, idade, missoes_id) VALUES (9, 'Gaara', 'gaara@naruto.test', 20, 3);
 INSERT INTO tb_cadastro (id, nome, email, idade, missoes_id) VALUES (10, 'Itachi Uchiha', 'itachiuchiha@naruto.test', 21, 1);
+
+-- Ajustar sequence/identity para tb_cadastro
+ALTER TABLE tb_cadastro ALTER COLUMN id RESTART WITH 11;
