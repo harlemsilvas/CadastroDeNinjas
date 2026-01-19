@@ -130,5 +130,4 @@ Dica: você pode exportar os requests que usar com os exemplos acima e versionar
 - Se a missão informada não existir, o endpoint retorna 400 com uma mensagem indicando qual id não foi encontrado.
 
 ---
-
-Se quiser, crio também uma pequena collection JSON do Postman ou exemplos para Insomnia/Postwoman. Diga qual formato prefere e eu gero. 
+ 
