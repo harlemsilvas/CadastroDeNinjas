@@ -18,6 +18,7 @@ Este projeto fornece endpoints REST para cadastrar, listar, consultar e remover 
 ## Status atual
 ### Endpoints implementados
 - GET /ninjas/boasvindas → retorna uma mensagem de boas-vindas (implementado em `NinjaController`).
+- PATCH /ninjas/{id} → atualizações parciais (nome, email, idade, missoes). Veja seção "PATCH /ninjas/{id}" para exemplos.
 
 ### Modelagem (JPA)
 - NinjaModel (tb_cadastro): id, nome, email, idade. Relaciona-se com Missoes via coluna `missoes_id`.
@@ -78,16 +79,75 @@ curl http://localhost:8080/ninjas/boasvindas
 ```
 
 ## Executar testes
+Você pode rodar a suíte de testes localmente com o wrapper Maven.
+
 PowerShell:
 
 ```powershell
+# rodar todos os testes
 .mvnw.cmd test
+
+# rodar apenas testes de unidade
+.mvnw.cmd -Dtest=NinjaServiceTest test
+
+# rodar apenas testes de integração do controller que iniciam a aplicação
+.mvnw.cmd -Dtest=NinjaControllerIntegrationTest test
 ```
 
 Linux / macOS:
 
 ```bash
 ./mvnw test
+```
+
+Observações:
+- Os testes de integração usam H2 em memória e iniciam o servidor em uma porta aleatória (RANDOM_PORT). Os testes criam/limpam dados automaticamente.
+- Se quiser acelerar um build local para desenvolvimento iterativo, pode usar `-DskipTests` no pacote: `./mvnw -DskipTests package`.
+
+## Inicialização do banco (data.sql)
+O projeto inclui um script de inicialização que é executado automaticamente ao arrancar a aplicação quando a propriedade padrão de inicialização de dados do Spring Boot está habilitada.
+
+- Arquivo: `src/main/resources/data.sql`
+- Comportamento: o script usa comandos H2 (`MERGE INTO` e `ALTER TABLE ... RESTART WITH`) para ser idempotente e evitar falhas de inserção duplicada em ambientes de teste. Ele insere/atualiza três missões iniciais e 10 ninjas de exemplo.
+- O script atual (resumo):
+  - Insere/atualiza 3 missões (ids 1..3).
+  - Insere/atualiza 10 ninjas famosos (Naruto, Sasuke, Sakura, etc.) apontando para as missões ciclicamente.
+  - Ajusta as sequências/identities para evitar colisões (próximo id após os itens definidos).
+
+Se quiser alterar os dados iniciais, edite `src/main/resources/data.sql` e reinicie a aplicação. Em ambiente de produção, remova ou substitua este script conforme apropriado.
+
+## API - Endpoints principais
+Base URL: http://localhost:8080
+
+- GET /ninjas/boasvindas
+- GET /ninjas
+- POST /ninjas
+- GET /ninjas/{id}
+- PUT /ninjas/{id}
+- PATCH /ninjas/{id}  ← atualizações parciais
+- DELETE /ninjas/{id}
+
+PATCH /ninjas/{id}
+- Aceita um JSON parcial com os campos que você deseja atualizar: `nome`, `email`, `idade`, `missoes`.
+- Formatos aceitos para `missoes` (por causa do modelo ManyToOne no `Ninja`):
+  - um id numérico: `{ "missoes": 2 }`
+  - um objeto com id: `{ "missoes": { "id": 2 } }`
+- Comportamento:
+  - Campos enviados são validados e aplicados; campos omitidos são mantidos.
+  - Campos desconhecidos causam 400 Bad Request (modo estrito).
+  - Se a missão informada não existir, retorna 400 com mensagem de erro explicando o id inválido.
+
+Exemplos:
+- Atualizar nome e idade:
+
+```json
+{ "nome": "Kakashi Hatake", "idade": 35 }
+```
+
+- Atualizar missão por id:
+
+```json
+{ "missoes": 2 }
 ```
 
 ## Documentação
@@ -99,18 +159,6 @@ Consulte também:
 - `CONTRIBUTING.md` — orientações para contribuir com o projeto.
 - `LICENSE` — licença do projeto (MIT), arquivo na raiz do repositório.
 
-## API - Endpoints principais
-Base URL: http://localhost:8080
-
-- GET /ninjas/boasvindas
-- GET /ninjas
-- POST /ninjas
-- GET /ninjas/{id}
-- PUT /ninjas/{id}
-- DELETE /ninjas/{id}
-
-Observação: o controller atual implementa PUT para atualização; PATCH não está implementado.
-
 ---
 
-Atualizado: revisão de sintaxe, marcadores e links; rotas ajustadas conforme código fonte.
+Atualizado: inclusão de documentação de testes locais, inicialização do banco e operação PATCH.
